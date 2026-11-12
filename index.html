@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopScope | E-commerce Analysis</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f6fa;
+            color: #222;
+        }
+
+        header {
+            background: #171c35;
+            color: white;
+            padding: 20px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        header h1 span {
+            color: #8b9cff;
+        }
+
+        .search-box {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            width: 260px;
+            max-width: 100%;
+        }
+
+        .container {
+            padding: 30px 6%;
+        }
+
+        .section-title {
+            margin-bottom: 20px;
+        }
+
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .category-btn {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 11px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+
+        .category-btn.active,
+        .category-btn:hover {
+            background: #5965e9;
+            color: white;
+            border-color: #5965e9;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 22px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 13px;
+            overflow: hidden;
+            box-shadow: 0 3px 12px rgba(0,0,0,.07);
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+            background: #eee;
+        }
+
+        .product-info {
+            padding: 16px;
+        }
+
+        .product-info h3 {
+            margin-bottom: 10px;
+        }
+
+        .price {
+            color: #5965e9;
+            font-weight: bold;
+            font-size: 19px;
+            margin: 10px 0;
+        }
+
+        .rating {
+            color: #e6a400;
+            margin-bottom: 12px;
+        }
+
+        .view-btn,
+        .back-btn,
+        .submit-btn {
+            background: #5965e9;
+            color: white;
+            border: none;
+            padding: 11px 17px;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+
+        .view-btn {
+            width: 100%;
+        }
+
+        .back-btn {
+            margin-bottom: 25px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Product details */
+
+        .product-detail {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.06);
+        }
+
+        .detail-top {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .detail-top img {
+            width: 100%;
+            height: 350px;
+            object-fit: contain;
+            background: #f7f7f7;
+            border-radius: 12px;
+        }
+
+        .detail-info h2 {
+            font-size: 27px;
+            margin-bottom: 15px;
+        }
+
+        .detail-info p {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .detail-price {
+            color: #5965e9;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        /* Charts */
+
+        .charts-section {
+            margin-top: 40px;
+        }
+
+        .charts-section h2 {
+            margin-bottom: 20px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 22px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 22px;
+            border-radius: 13px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.07);
+            min-width: 0;
+        }
+
+        .chart-container h3 {
+            margin-bottom: 20px;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            max-height: 300px;
+        }
+
+        /* Reviews */
+
+        .reviews-section {
+            margin-top: 40px;
+        }
+
+        .review-card {
+            background: #f8f8fc;
+            padding: 17px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .review-card h4 {
+            margin-bottom: 7px;
+        }
+
+        .review-card p {
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .sentiment-label {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .review-form {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            margin-top: 25px;
+            border: 1px solid #eee;
+        }
+
+        .review-form h3 {
+            margin-bottom: 15px;
+        }
+
+        .review-form label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        .review-form input,
+        .review-form textarea,
+        .review-form select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 15px;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+        }
+
+        .review-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .message {
+            margin-top: 12px;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #d93025;
+        }
+
+        @media(max-width: 700px) {
+            header, .container {
+                padding-left: 5%;
+                padding-right: 5%;
+            }
+
+            .detail-top {
+                grid-template-columns: 1fr;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Shop<span>Scope</span></h1>
+
+    <input
+        type="text"
+        id="searchInput"
+        class="search-box"
+        placeholder="Search products..."
+    >
+</header>
+
+<main class="container">
+
+    <!-- HOME PAGE -->
+
+    <section id="homePage">
+
+        <h2 class="section-title">Explore Categories</h2>
+
+        <div class="categories" id="categoryButtons"></div>
+
+        <h2 class="section-title" id="productHeading">
+            All Products
+        </h2>
+
+        <div id="productGrid" class="product-grid">
+            Loading products...
+        </div>
+
+    </section>
+
+
+    <!-- PRODUCT DETAILS PAGE -->
+
+    <section id="productPage" class="hidden">
+
+        <button class="back-btn" id="backButton">
+            ← Back to Products
+        </button>
+
+        <div id="productDetails" class="product-detail"></div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+    let allProducts = [];
+    let selectedCategory = "all";
+
+    let sentimentChartInstance = null;
+    let salesChartInstance = null;
+
+
+    // LOAD PRODUCTS
+
+    async function loadProducts() {
+
+        const grid = document.getElementById("productGrid");
+
+        try {
+
+            const response = await fetch("/api/products");
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Unable to load products.");
+            }
+
+            allProducts = Array.isArray(data)
+                ? data
+                : (data.products || []);
+
+            createCategories();
+            displayProducts(allProducts);
+
+        } catch (error) {
+
+            grid.textContent = error.message;
+            grid.classList.add("error");
+
+        }
+    }
+
+
+    // CREATE CATEGORY BUTTONS
+
+    function createCategories() {
+
+        const container = document.getElementById("categoryButtons");
+
+        container.innerHTML = "";
+
+        const categories = [
+            ...new Set(allProducts.map(p => p.category).filter(Boolean))
+        ];
+
+        addCategoryButton("all", "All Products");
+
+        categories.forEach(category => {
+            addCategoryButton(category, formatText(category));
+        });
+    }
+
+
+    function addCategoryButton(value, label) {
+
+        const button = document.createElement("button");
+
+        button.className =
+            "category-btn" +
+            (selectedCategory === value ? " active" : "");
+
+        button.textContent = label;
+
+        button.addEventListener("click", () => {
+
+            selectedCategory = value;
+
+            document.querySelectorAll(".category-btn").forEach(btn => {
+                btn.classList.remove("active");
+            });
+
+            button.classList.add("active");
+
+            filterProducts();
+        });
+
+        document.getElementById("categoryButtons").appendChild(button);
+    }
+
+
+    // DISPLAY PRODUCT CARDS
+
+    function displayProducts(products) {
+
+        const grid = document.getElementById("productGrid");
+
+        grid.innerHTML = "";
+
+        if (!products.length) {
+            grid.textContent = "No products found.";
+            return;
+        }
+
+        products.forEach(product => {
+
+            const card = document.createElement("div");
+            card.className = "product-card";
+
+            const image = product.image_url || product.image ||
+                "https://placehold.co/600x400?text=Product";
+
+            card.innerHTML = `
+                <img
+                    src="${escapeHTML(image)}"
+                    alt="${escapeHTML(product.name)}"
+                >
+
+                <div class="product-info">
+
+                    <h3>${escapeHTML(product.name)}</h3>
+
+                    <div class="price">
+                        ₹${Number(product.price || 0).toLocaleString("en-IN")}
+                    </div>
+
+                    <div class="rating">
+                        ★ ${escapeHTML(product.rating ?? "N/A")}
+                    </div>
+
+                    <button class="view-btn">View Product</button>
+
+                </div>
+            `;
+
+            card.querySelector("img").addEventListener("error", function() {
+                this.src = "https://placehold.co/600x400?text=No+Image";
+            });
+
+            card.querySelector(".view-btn").addEventListener("click", () => {
+                openProduct(product.id || product.product_id);
+            });
+
+            card.addEventListener("click", event => {
+
+                if (event.target.closest(".view-btn")) return;
+
+                openProduct(product.id || product.product_id);
+            });
+
+            grid.appendChild(card);
+        });
+    }
+
+
+    // FILTER PRODUCTS
+
+    function filterProducts() {
+
+        const searchText =
+            document.getElementById("searchInput").value.toLowerCase();
+
+        const filtered = allProducts.filter(product => {
+
+            const matchesCategory =
+                selectedCategory === "all" ||
+                product.category === selectedCategory;
+
+            const matchesSearch =
+                (product.name || "").toLowerCase().includes(searchText) ||
+                (product.category || "").toLowerCase().includes(searchText);
+
+            return matchesCategory && matchesSearch;
+        });
+
+        document.getElementById("productHeading").textContent =
+            selectedCategory === "all"
+                ? "All Products"
+                : formatText(selectedCategory);
+
+        displayProducts(filtered);
+    }
+
+
+    document.getElementById("searchInput").addEventListener(
+        "input", filterProducts
+    );
+
+
+    // OPEN PRODUCT DETAILS
+
+    async function openProduct(productId) {
+
+        try {
+
+            const response = await fetch(
+                `/api/products/${encodeURIComponent(productId)}`
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Unable to load product.");
+            }
+
+            document.getElementById("homePage").classList.add("hidden");
+            document.getElementById("productPage").classList.remove("hidden");
+
+            renderProductDetails(
+                data.product,
+                data.reviews || [],
+                data.analysis || {}
+            );
+
+            window.scrollTo(0, 0);
+
+        } catch (error) {
+
+            alert(error.message);
+
+        }
+    }
+
+
+    // RENDER PRODUCT DETAILS
+
+    function renderProductDetails(product, reviews, analysis) {
+
+        const details = document.getElementById("productDetails");
+
+        const image = product.image_url || product.image ||
+            "https://placehold.co/600x400?text=Product";
+
+        details.innerHTML = `
+
+            <div class="detail-top">
+
+                <img
+                    id="detailImage"
+                    src="${escapeHTML(image)}"
+                    alt="${escapeHTML(product.name)}"
+                >
+
+                <div class="detail-info">
+
+                    <h2>${escapeHTML(product.name)}</h2>
+
+                    <div class="detail-price">
+                        ₹${Number(product.price || 0).toLocaleString("en-IN")}
+                    </div>
+
+                    <p>
+                        Category:
+                        ${escapeHTML(formatText(product.category || ""))}
+                    </p>
+
+                    <p>
+                        Rating: ★ ${escapeHTML(product.rating ?? "N/A")}
+                    </p>
+
+                    <p>
+                        Total Reviews:
+                        ${escapeHTML(product.reviews_count ?? reviews.length)}
+                    </p>
+
+                    <p>
+                        ${escapeHTML(product.description || "")}
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="charts-section">
+
+                <h2>Product Analytics</h2>
+
+                <div class="charts-grid">
+
+                    <div class="chart-container">
+                        <h3>Customer Review Sentiment</h3>
+                        <canvas id="sentimentChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Sales History</h3>
+                        <canvas id="salesChart"></canvas>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="reviews-section">
+
+                <h2>Customer Reviews</h2>
+
+                <div id="reviewsList"></div>
+
+                <div class="review-form">
+
+                    <h3>Write a Review</h3>
+
+                    <form id="reviewForm">
+
+                        <label>Your Name</label>
+                        <input
+                            type="text"
+                            id="customerName"
+                            required
+                            placeholder="Enter your name"
+                        >
+
+                        <label>Your City</label>
+                        <input
+                            type="text"
+                            id="customerCity"
+                            placeholder="Enter your city"
+                        >
+
+                        <label>Rating</label>
+                        <select id="customerRating" required>
+                            <option value="">Select rating</option>
+                            <option value="5">5 - Excellent</option>
+                            <option value="4">4 - Good</option>
+                            <option value="3">3 - Average</option>
+                            <option value="2">2 - Poor</option>
+                            <option value="1">1 - Very Poor</option>
+                        </select>
+
+                        <label>Your Review</label>
+                        <textarea
+                            id="customerReview"
+                            required
+                            placeholder="Write your experience..."
+                        ></textarea>
+
+                        <button type="submit" class="submit-btn">
+                            Submit Review
+                        </button>
+
+                        <p id="reviewMessage" class="message"></p>
+
+                    </form>
+
+                </div>
+
+            </div>
+        `;
+
+        document.getElementById("detailImage").addEventListener(
+            "error",
+            function() {
+                this.src = "https://placehold.co/600x400?text=No+Image";
+            }
+        );
+
+        displayReviews(reviews);
+
+        showProductCharts(product, analysis);
+
+        document.getElementById("reviewForm").addEventListener(
+            "submit",
+            event => submitReview(event, product.id || product.product_id)
+        );
+    }
+
+
+    // DISPLAY REVIEWS
+
+    function displayReviews(reviews) {
+
+        const container = document.getElementById("reviewsList");
+
+        container.innerHTML = "";
+
+        if (!reviews || reviews.length === 0) {
+
+            container.textContent =
+                "No reviews available for this product yet.";
+
+            return;
+        }
+
+        reviews.forEach(review => {
+
+            const card = document.createElement("div");
+            card.className = "review-card";
+
+            const name = document.createElement("h4");
+            name.textContent = review.name || "Customer";
+
+            const rating = document.createElement("div");
+            rating.className = "rating";
+            rating.textContent =
+                "★".repeat(Math.max(0, Math.min(5, Number(review.rating) || 0)));
+
+            const city = document.createElement("small");
+            city.textContent = review.city ? " " + review.city : "";
+
+            const sentiment = document.createElement("span");
+            sentiment.className = "sentiment-label";
+            sentiment.textContent = review.sentiment || "Not analysed";
+
+            const comment = document.createElement("p");
+            comment.textContent =
+                review.text || review.review_text || "";
+
+            card.appendChild(name);
+            card.appendChild(rating);
+            card.appendChild(city);
+            card.appendChild(sentiment);
+            card.appendChild(comment);
+
+            container.appendChild(card);
+        });
+    }
+
+
+    // CREATE BOTH CHARTS
+
+    function showProductCharts(product, analysis) {
+
+        if (sentimentChartInstance) {
+            sentimentChartInstance.destroy();
+        }
+
+        if (salesChartInstance) {
+            salesChartInstance.destroy();
+        }
+
+        // SENTIMENT CHART
+
+        const positive = Number(
+            analysis.positive ?? product.positive_sentiment ?? 0
+        );
+
+        const neutral = Number(
+            analysis.neutral ?? product.neutral_sentiment ?? 0
+        );
+
+        const negative = Number(
+            analysis.negative ?? product.negative_sentiment ?? 0
+        );
+
+        sentimentChartInstance = new Chart(
+            document.getElementById("sentimentChart"),
+            {
+                type: "doughnut",
+
+                data: {
+                    labels: ["Positive", "Neutral", "Negative"],
+
+                    datasets: [{
+                        data: [positive, neutral, negative],
+
+                        backgroundColor: [
+                            "#22c55e",
+                            "#facc15",
+                            "#ef4444"
+                        ],
+
+                        borderWidth: 2
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        },
+
+                        tooltip: {
+                            callbacks: {
+                                label: context =>
+                                    `${context.label}: ${context.parsed}%`
+                            }
+                        }
+                    }
+                }
+            }
+        );
+
+
+        // SALES HISTORY CHART
+
+        let salesData = product.sales_history || [];
+
+        if (typeof salesData === "string") {
+            salesData = salesData.split(",").map(value => Number(value.trim()));
+        }
+
+        salesData = salesData.map(value => Number(value) || 0);
+
+        const salesLabels = salesData.map(
+            (_, index) => "Month " + (index + 1)
+        );
+
+        salesChartInstance = new Chart(
+            document.getElementById("salesChart"),
+            {
+                type: "line",
+
+                data: {
+                    labels: salesLabels,
+
+                    datasets: [{
+                        label: "Number of Sales",
+                        data: salesData,
+                        borderColor: "#5965e9",
+                        backgroundColor: "rgba(89, 101, 233, 0.15)",
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: "Number of Sales"
+                            }
+                        },
+
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Sales Period"
+                            }
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+
+    // SUBMIT A REVIEW
+
+    async function submitReview(event, productId) {
+
+        event.preventDefault();
+
+        const message = document.getElementById("reviewMessage");
+
+        const reviewData = {
+
+            product_id: productId,
+
+            name: document.getElementById("customerName").value.trim(),
+
+            city: document.getElementById("customerCity").value.trim(),
+
+            rating: Number(
+                document.getElementById("customerRating").value
+            ),
+
+            text: document.getElementById("customerReview").value.trim()
+
+        };
+
+        try {
+
+            const response = await fetch("/api/add-review", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(reviewData)
+
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Review submission failed.");
+            }
+
+            await openProduct(productId);
+
+            window.scrollTo(0, 0);
+
+        } catch (error) {
+
+            message.textContent = error.message;
+            message.className = "message error";
+
+        }
+    }
+
+
+    // BACK TO HOME
+
+    function goHome() {
+
+        if (sentimentChartInstance) {
+            sentimentChartInstance.destroy();
+            sentimentChartInstance = null;
+        }
+
+        if (salesChartInstance) {
+            salesChartInstance.destroy();
+            salesChartInstance = null;
+        }
+
+        document.getElementById("productPage").classList.add("hidden");
+        document.getElementById("homePage").classList.remove("hidden");
+
+        window.scrollTo(0, 0);
+    }
+
+
+    document.getElementById("backButton").addEventListener(
+        "click", goHome
+    );
+
+
+    // HELPER FUNCTIONS
+
+    function formatText(value) {
+
+        return String(value)
+            .replaceAll("-", " ")
+            .replace(/\b\w/g, letter => letter.toUpperCase());
+    }
+
+
+    function escapeHTML(value) {
+
+        return String(value ?? "").replace(/[&<>"']/g, character => {
+
+            const entities = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            };
+
+            return entities[character];
+        });
+    }
+
+
+    // START WEBSITE
+
+    loadProducts();
+
+</script>
+
+</body>
+</html>
